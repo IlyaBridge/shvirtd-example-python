@@ -1,8 +1,8 @@
-.git/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.DS_Store
-.env
+.git
+.gitignore
+*.pdf
+*.md
+LICENSE
+not_tested_main.py
+compose.yaml
+proxy.yaml
