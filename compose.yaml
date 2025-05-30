@@ -6,17 +6,17 @@ include:
 services:
   web:
     build:
-      context: .  # Собираем из Dockerfile.python
+      context: .
       dockerfile: Dockerfile.python
     networks:
       backend:
-        ipv4_address: 172.20.0.5  # Фиксированный IP
+        ipv4_address: 172.20.0.5
     environment:
-      DB_HOST: db  # Используем имя сервиса для подключения
-      DB_USER: ${MYSQL_USER}  # Из .env
+      DB_HOST: db
+      DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: ${MYSQL_DATABASE}
-    restart: always  # Автоперезапуск
+    restart: always
     depends_on:
       db:
         condition: service_healthy
@@ -25,7 +25,7 @@ services:
     image: mysql:8
     networks:
       backend:
-        ipv4_address: 172.20.0.10  # Фиксированный IP
+        ipv4_address: 172.20.0.10
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -34,15 +34,11 @@ services:
     restart: always
     volumes:
       - mysql_data:/var/lib/mysql
-    healthcheck:  # Для корректного depends_on
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 5s
       timeout: 5s
       retries: 5
-
-networks:
-  backend:  # Сеть из proxy.yaml
-    external: true
 
 volumes:
   mysql_data:
