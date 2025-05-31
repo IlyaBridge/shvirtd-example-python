@@ -1,4 +1,7 @@
 .env
 *.pyc
-pycache/
-mysql_data/
+__pycache__/
+venv/
+*.swp
+*.swo
+.DS_Store

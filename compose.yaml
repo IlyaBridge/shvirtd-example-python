@@ -1,6 +1,7 @@
-# Основной файл компоновки
+version: '3.8'
+
 include:
-  - proxy.yaml  # Подключаем конфигурацию прокси-серверов
+  - proxy.yaml
 
 services:
   web:
@@ -44,67 +45,3 @@ networks:
 
 volumes:
   mysql_data:
-
-# БЕЗ ИНКЛУДА
-# services:
-#   web:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.python
-#     networks:
-#       backend:
-#         ipv4_address: 172.20.0.5
-#     restart: always
-#     environment:
-#       DB_HOST: db
-#       DB_USER: ${MYSQL_USER}
-#       DB_PASSWORD: ${MYSQL_PASSWORD}
-#       DB_NAME: ${MYSQL_DATABASE}
-#     depends_on:
-#       db:
-#         condition: service_healthy
-
-#   db:
-#     image: mysql:8
-#     networks:
-#       backend:
-#         ipv4_address: 172.20.0.10
-#     restart: on-failure
-#     env_file: .env
-#     volumes:
-#       - mysql_data:/var/lib/mysql
-#     healthcheck:
-#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-#       interval: 5s
-#       timeout: 10s
-#       retries: 5
-
-#   reverse-proxy:
-#     image: haproxy:2.4
-#     restart: always
-#     networks:
-#       backend: {}
-#     ports:
-#       - "127.0.0.1:8080:8080"
-#     volumes:
-#       - ./haproxy/reverse/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:rw
-
-#   ingress-proxy:
-#     image: nginx:1.21.1
-#     restart: always
-#     network_mode: host
-#     volumes:
-#       - ./nginx/ingress/default.conf:/etc/nginx/conf.d/default.conf:rw
-#       - ./nginx/ingress/nginx.conf:/etc/nginx/nginx.conf:rw
-#     depends_on:
-#       - reverse-proxy
-
-# networks:
-#   backend:
-#     driver: bridge
-#     ipam:
-#       config:
-#         - subnet: 172.20.0.0/24
-
-# volumes:
-#   mysql_data:

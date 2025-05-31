@@ -1,11 +1,22 @@
+# Используем slim-образ для уменьшения размера
 FROM python:3.9-slim
 
+# Устанавливаем зависимости
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc python3-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Создаем рабочую директорию
 WORKDIR /app
 
+# Копируем все файлы (кроме исключенных в .dockerignore)
 COPY . .
 
+# Устанавливаем зависимости Python
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Открываем порт приложения
 EXPOSE 5000
 
+# Запускаем приложение
 CMD ["python", "main.py"]
