@@ -113,10 +113,89 @@ https://github.com/IlyaBridge/shvirtd-example-python/blob/main/task_4/deploy.sh
 3. Настройте выполнение скрипта раз в 1 минуту через cron, crontab или systemctl timer. Придумайте способ не светить логин/пароль в git!!
 4. Предоставьте скрипт, cron-task и скриншот с несколькими резервными копиями в "/opt/backup"
 
+---
+
 ## Задача 6
 Скачайте docker образ ```hashicorp/terraform:latest``` и скопируйте бинарный файл ```/bin/terraform``` на свою локальную машину, используя dive и docker save.
 Предоставьте скриншоты  действий .
 
+### Решение 6
+Скачивание образа Terraform
+```
+docker pull hashicorp/terraform:latest
+docker images | grep terraform  
+```
+![006 0-0001](https://github.com/user-attachments/assets/eb9e4747-a3a0-46d7-a287-95987477a83c)
+
+Сохранение образа в .tar-архив
+```
+docker save hashicorp/terraform:latest -o terraform.tar
+ls -lh terraform.tar  
+```
+![006 0-0002](https://github.com/user-attachments/assets/743cef73-ec3f-4b0f-96b9-c8279a6e96d7)
+
+Установка dive
+```
+wget https://github.com/wagoodman/dive/releases/download/v0.11.0/dive_0.11.0_linux_amd64.deb
+
+sudo apt install ./dive_0.11.0_linux_amd64.deb
+
+dive --version  
+```
+
+Анализ через dive
+```
+dive ./terraform.tar
+```
+![006 0-0003](https://github.com/user-attachments/assets/61e11f18-e38f-481d-b4fb-f3034eff7eea)
+При попытке анализа образа через dive возникла ошибка:
+Handler not available locally... invalid reference format
+
+Извлечение файла terraform
+Создаем директорию для распаковки
+```
+mkdir terraform && cd terraform
+```
+
+Распаковываем образ
+```
+tar -xf ../terraform.tar
+```
+
+Смотрим manifest.json
+```
+cat manifest.json
+```
+![006 0-0005 (Manifest)](https://github.com/user-attachments/assets/b102ba0d-f8d2-4602-94bc-5edec3130e52)
+
+Переброр всех слоёв из manifest.json
+```
+# Переходим в директорию с blobs
+cd blobs/sha256/
+
+# Перебираем все слои из manifest.json
+for layer in 08000c18d16dadf9553d747a58cf44023423a9ab010aab96cf263d2216b8b350 d37c201d602b7b9c29907060445ac3e59e815a4da90f6e74e94a29c04cdb7807 8bdcd40dd9a21bff31f8e91a12485a16af0054832fcea58fae09c22072ed294e e0f55b34ca5dc362ab5757d39045589d45aaa6ffe70a3bb2d88b2939592a5806; do
+  echo "Проверяю слой $layer"
+  mkdir -p temp_extract
+  tar -xf "$layer" -C temp_extract
+  if [ -f temp_extract/bin/terraform ]; then
+    echo "Найден terraform в слое $layer"
+    cp temp_extract/bin/terraform ../../terraform
+    break
+  fi
+  rm -rf temp_extract
+done
+
+# Возвращаемся в исходную директорию
+cd ../..
+
+# Делаем terraform исполняемым
+chmod +x terraform
+
+# Проверяем версию
+./terraform version
+```
+![006 0-0006-1 (Перебираем Слои)](https://github.com/user-attachments/assets/0a1751d6-7db6-4ff1-937a-77f53458f5e4)
 
 ---
 
@@ -124,6 +203,41 @@ https://github.com/IlyaBridge/shvirtd-example-python/blob/main/task_4/deploy.sh
 Добейтесь аналогичного результата, используя docker cp.  
 Предоставьте скриншоты  действий .
 
+### Решение 6.1
+Создаем временный контейнер
+```
+docker create --name temp_terraform hashicorp/terraform:latest
+```
+![006 1-№0001](https://github.com/user-attachments/assets/1b43b761-41ed-4a25-bf83-aa9c0248a843)
+
+Контейнер создан в остановленном состоянии
+Копируем файл из контейнера
+```
+docker cp temp_terraform:/bin/terraform ./terraform
+```
+![006 1-№0002](https://github.com/user-attachments/assets/f819da4e-cf13-40af-9ac3-6ab97c8717ba)
+
+Удаляем временный контейнер
+```
+docker rm temp_terraform
+```
+![006 1-№0003](https://github.com/user-attachments/assets/d7766860-2c8f-407d-86e8-2934fc4b0c2f)
+контейнер удалён после копирования.
+
+Делаем файл исполняемым
+```
+sudo chmod +x ./terraform
+```
+![006 1-№0004](https://github.com/user-attachments/assets/51268ca2-9910-40bd-8b32-eedc359772f5)
+
+Проверяем
+```
+./terraform --version
+```
+![006 1-№0005](https://github.com/user-attachments/assets/3501d202-2fac-4772-ae02-332783653144)
+
+Каталог, в котором находится бинарник
+![006 1-№0006](https://github.com/user-attachments/assets/07dfda7a-ebc2-4365-b91b-5e4dba85cfc4)
 
 ---
 
@@ -136,6 +250,5 @@ https://github.com/IlyaBridge/shvirtd-example-python/blob/main/task_4/deploy.sh
 ## Задача 7 (***)
 Запустите ваше python-приложение с помощью runC, не используя docker или containerd.  
 Предоставьте скриншоты  действий .
-
 
 ---
